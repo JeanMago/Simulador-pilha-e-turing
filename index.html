@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Modelos de Computação | Teoria da Computação</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header & Identificação Acadêmica -->
+    <header>
+        <div class="brand-container">
+            <h1 class="brand-title">
+                <span>Simulador de Modelos de Computação</span>
+                <span class="badge">Aula 8 e 9</span>
+            </h1>
+            <p class="brand-subtitle">
+                Teoria da Computação e Complexidade &bull; Prof. Adão E. de Souza Filho &bull; 2026/2
+            </p>
+        </div>
+
+        <nav class="nav-tabs">
+            <!-- Máquina de Turing como PRIMEIRA aba e ativa por padrão -->
+            <button class="tab-btn active" data-tab="tab-turing">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/><path d="M12 3v4M12 17v4"/></svg>
+                Máquina de Turing
+            </button>
+            <button class="tab-btn" data-tab="tab-two-stack">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Máquina de Duas Pilhas
+            </button>
+            <button class="tab-btn" data-tab="tab-theory">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Relatório Teórico (Etapas 1 e 2)
+            </button>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main>
+
+        <!-- ============================================================== -->
+        <!-- ABA 1 (DESTAQUE PRINCIPAL): MÁQUINA DE TURING (TM)             -->
+        <!-- ============================================================== -->
+        <section id="tab-turing" class="tab-content active">
+            <!-- Card Didático: Como Funciona Este Algoritmo (Colapsável para não separar controles dos resultados) -->
+            <details class="didactic-guide-card" id="tm-didactic-card">
+                <summary>
+                    <div class="didactic-summary-content">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                        <span>Como a Máquina Resolve Este Problema (Estratégia e Símbolos)</span>
+                    </div>
+                    <span class="didactic-toggle-badge"></span>
+                </summary>
+
+                <div class="didactic-content-body" style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">
+                    <div class="didactic-goal" id="tm-didactic-goal">Objetivo do exemplo...</div>
+                    <div class="didactic-why-box" id="tm-didactic-why" style="display: none;"></div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; margin: 0.5rem 0 0.25rem 0;">Estratégia Lógica do Algoritmo:</div>
+                    <div class="didactic-steps-container" id="tm-didactic-steps"></div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; margin: 0.75rem 0 0.25rem 0;">Significado dos Símbolos na Fita:</div>
+                    <div class="didactic-symbols-grid" id="tm-didactic-symbols"></div>
+                </div>
+            </details>
+
+            <!-- ============================================================== -->
+            <!-- COCKPIT UNIFICADO: CONFIGURAÇÃO, CONTROLE & RESULTADOS         -->
+            <!-- ============================================================== -->
+            <div class="cockpit-card">
+                <div class="cockpit-header">
+                    <div class="cockpit-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/><path d="M12 3v4M12 17v4"/></svg>
+                        <span>Painel de Controle e Resultados — Máquina de Turing</span>
+                    </div>
+                    <span class="cockpit-subtitle">Configuração, execução passo a passo e fita de memória integradas</span>
+                </div>
+
+                <!-- 1. Configuração e Entrada -->
+                <div class="cockpit-config-panel">
+                    <div class="panel-row">
+                        <div class="form-group flex-1">
+                            <label for="tm-preset-select">Exemplo / Linguagem Pré-Configurada:</label>
+                            <select id="tm-preset-select"></select>
+                        </div>
+
+                        <div class="form-group flex-1">
+                            <label for="tm-input-string">Palavra de Entrada na Fita:</label>
+                            <div class="input-with-button">
+                                <input type="text" id="tm-input-string" placeholder="Digite a fita inicial (ex: aabbcc)...">
+                                <button id="tm-btn-load" class="btn btn-secondary">Carregar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bateria de testes rápidos categorizados -->
+                    <div class="quick-tests-container" id="tm-quick-tests"></div>
+                </div>
+
+                <!-- 2. Barra de Ações (com botão Passo a Passo destacado e sticky) -->
+                <div class="action-bar sticky-action-bar">
+                    <button id="tm-btn-step" class="btn btn-primary btn-step-highlight" title="Executar um passo individual">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v16l11-8L5 4zm13 0h2v16h-2V4z"/></svg>
+                        Executar Próximo Passo
+                    </button>
+                    <button id="tm-btn-auto" class="btn btn-success" title="Iniciar execução contínua">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <span id="tm-btn-auto-text">Executar Automaticamente</span>
+                    </button>
+                    <button id="tm-btn-reset" class="btn btn-secondary" title="Reiniciar máquina para a fita original">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Reiniciar
+                    </button>
+
+                    <div class="speed-control">
+                        <span>Velocidade:</span>
+                        <input type="range" id="tm-speed" min="100" max="1500" step="100" value="500">
+                        <span id="tm-speed-val">500ms</span>
+                    </div>
+                </div>
+
+                <!-- 3. Resultados Imediatos: Faixa de Status da Máquina -->
+                <div class="status-banner">
+                    <div class="status-left">
+                        <div class="state-badge-box">
+                            <span class="label">Estado Atual:</span>
+                            <span id="tm-state-display" class="state-indicator">q0</span>
+                        </div>
+                        <div class="step-counter">
+                            Passos: <strong id="tm-step-display">0</strong>
+                        </div>
+                        <div class="step-counter">
+                            Posição do Cabeçote: <strong id="tm-head-pos-display">0</strong>
+                        </div>
+                        <div class="step-counter">
+                            Símbolo Sob Cabeçote: <strong id="tm-symbol-read-display">_</strong>
+                        </div>
+                    </div>
+
+                    <div id="tm-outcome-badge" class="outcome-pill ready">
+                        <span>Pronto</span>
+                    </div>
+
+                    <div id="tm-reason-box" class="halt-reason-box" style="display: none;"></div>
+                </div>
+
+                <!-- 4. Resultados Imediatos: Narração em Tempo Real -->
+                <div class="narration-card" id="tm-narration-box">
+                    <div class="narration-header">
+                        <span>📢 O Que a Máquina Fez Neste Passo:</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Passo a Passo Explicado</span>
+                    </div>
+                    <div class="narration-body" id="tm-narration-text">
+                        Clique em "Executar Próximo Passo" para iniciar a leitura e transformação da fita.
+                    </div>
+                    <div class="narration-next-goal" id="tm-narration-goal-container">
+                        <span>🎯 <strong>Objetivo Atual:</strong></span>
+                        <span id="tm-narration-goal-text">Aguardando início...</span>
+                    </div>
+                </div>
+
+                <!-- 5. Resultados Imediatos: Memória Visual da Fita de Turing -->
+                <div class="tape-cockpit-block">
+                    <div class="cockpit-section-title">
+                        <span>Fita Bidirecional e Cabeçote de Leitura/Escrita</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Símbolo em branco: '_'</span>
+                    </div>
+
+                    <div class="turing-tape-viewport" id="tm-tape-viewport">
+                        <div class="turing-tape-track" id="tm-tape-track">
+                            <!-- Células geradas via script -->
+                        </div>
+                    </div>
+
+                    <!-- Legenda de Cores da Fita -->
+                    <div class="tape-legend">
+                        <div class="legend-item">
+                            <div class="legend-swatch swatch-head"></div>
+                            <span><strong>Cabeçote (Posição Ativa)</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch swatch-marked"></div>
+                            <span>Símbolos Marcados / Processados (X, Y, Z)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch swatch-original"></div>
+                            <span>Símbolos da Entrada Original (a, b, c, 0, 1)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch swatch-blank"></div>
+                            <span>Célula Vazia / Branco (_)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Resultados Imediatos: Banner de Veredito Final Didático -->
+                <div class="verdict-banner" id="tm-verdict-banner">
+                    <div class="verdict-header" id="tm-verdict-title">
+                        <!-- Título do Veredito -->
+                    </div>
+                    <div class="verdict-explanation" id="tm-verdict-desc">
+                        <!-- Explicação pedagógica detalhada do resultado -->
+                    </div>
+                    <div class="verdict-metrics-grid">
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Cadeia de Entrada Original:</span>
+                            <span class="metric-val" id="tm-metric-input">""</span>
+                        </div>
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Conteúdo Final da Fita:</span>
+                            <span class="metric-val" id="tm-metric-tape">""</span>
+                        </div>
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Total de Passos:</span>
+                            <span class="metric-val" id="tm-metric-steps">0</span>
+                        </div>
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Estado de Término:</span>
+                            <span class="metric-val" id="tm-metric-state">q0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel Inferior: Transição Atual, Regras e Histórico -->
+            <div class="workspace-grid">
+                <!-- Coluna Esquerda: Transição Ativa e Tabela de Regras -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>Transição Atual e Conjunto de Regras</span>
+                    </div>
+
+                    <div class="active-transition-card">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Última Regra Formal Disparada:</span>
+                        <div class="transition-formula" id="tm-active-trans-formula">Nenhuma transição executada ainda.</div>
+                        <div class="transition-desc" id="tm-active-trans-desc">Aguardando o início da computação na fita.</div>
+                    </div>
+
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin: 0.5rem 0 0.25rem 0;">Tabela de Transições da Máquina de Turing:</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Estado Atual (q)</th>
+                                    <th>Lê da Fita</th>
+                                    <th>Próximo Estado (p)</th>
+                                    <th>Escreve</th>
+                                    <th>Movimento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tm-rules-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita: Histórico das Configurações -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>Histórico das Configurações</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Rastreabilidade passo a passo</span>
+                    </div>
+
+                    <div class="history-container" style="max-height: 400px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Passo</th>
+                                    <th>Estado</th>
+                                    <th>Posição</th>
+                                    <th>Lido</th>
+                                    <th>Ação Executada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tm-history-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- ABA 2: MÁQUINA DE DUAS PILHAS (2-PDA)                           -->
+        <!-- ============================================================== -->
+        <section id="tab-two-stack" class="tab-content">
+            <!-- Card Didático: Duas Pilhas (Colapsável para não separar controles dos resultados) -->
+            <details class="didactic-guide-card" id="ts-didactic-card">
+                <summary>
+                    <div class="didactic-summary-content">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                        <span>Como a Máquina de Duas Pilhas Resolve Este Problema (Estratégia e Memória)</span>
+                    </div>
+                    <span class="didactic-toggle-badge"></span>
+                </summary>
+
+                <div class="didactic-content-body" style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">
+                    <div class="didactic-goal" id="ts-didactic-goal">Objetivo do exemplo...</div>
+                    <div class="didactic-why-box" id="ts-didactic-why" style="display: none;"></div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; margin: 0.5rem 0 0.25rem 0;">Estratégia Lógica do Algoritmo:</div>
+                    <div class="didactic-steps-container" id="ts-didactic-steps"></div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; margin: 0.75rem 0 0.25rem 0;">Significado das Pilhas na Memória:</div>
+                    <div class="didactic-symbols-grid" id="ts-didactic-symbols"></div>
+                </div>
+            </details>
+
+            <!-- ============================================================== -->
+            <!-- COCKPIT UNIFICADO: CONFIGURAÇÃO, CONTROLE & RESULTADOS         -->
+            <!-- ============================================================== -->
+            <div class="cockpit-card">
+                <div class="cockpit-header">
+                    <div class="cockpit-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <span>Painel de Controle e Resultados — Máquina de Duas Pilhas</span>
+                    </div>
+                    <span class="cockpit-subtitle">Configuração, execução passo a passo e tubos de memória das pilhas integrados</span>
+                </div>
+
+                <!-- 1. Configuração e Entrada -->
+                <div class="cockpit-config-panel">
+                    <div class="panel-row">
+                        <div class="form-group flex-1">
+                            <label for="ts-preset-select">Exemplo / Linguagem Pré-Configurada:</label>
+                            <select id="ts-preset-select"></select>
+                        </div>
+
+                        <div class="form-group flex-1">
+                            <label for="ts-input-string">Palavra de Entrada:</label>
+                            <div class="input-with-button">
+                                <input type="text" id="ts-input-string" placeholder="Digite a cadeia (ex: aabbcc)...">
+                                <button id="ts-btn-load" class="btn btn-secondary">Carregar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bateria de testes rápidos categorizados -->
+                    <div class="quick-tests-container" id="ts-quick-tests"></div>
+                </div>
+
+                <!-- 2. Barra de Ações (com botão Passo a Passo destacado e sticky) -->
+                <div class="action-bar sticky-action-bar">
+                    <button id="ts-btn-step" class="btn btn-primary btn-step-highlight" title="Executar um passo individual">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v16l11-8L5 4zm13 0h2v16h-2V4z"/></svg>
+                        Executar Próximo Passo
+                    </button>
+                    <button id="ts-btn-auto" class="btn btn-success" title="Iniciar execução contínua">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <span id="ts-btn-auto-text">Executar Automaticamente</span>
+                    </button>
+                    <button id="ts-btn-reset" class="btn btn-secondary" title="Reiniciar máquina para a entrada original">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Reiniciar
+                    </button>
+
+                    <div class="speed-control">
+                        <span>Velocidade:</span>
+                        <input type="range" id="ts-speed" min="100" max="1500" step="100" value="500">
+                        <span id="ts-speed-val">500ms</span>
+                    </div>
+                </div>
+
+                <!-- 3. Resultados Imediatos: Status da Máquina de 2 Pilhas -->
+                <div class="status-banner">
+                    <div class="status-left">
+                        <div class="state-badge-box">
+                            <span class="label">Estado Atual:</span>
+                            <span id="ts-state-display" class="state-indicator">q0</span>
+                        </div>
+                        <div class="step-counter">
+                            Passos Executados: <strong id="ts-step-display">0</strong>
+                        </div>
+                        <div class="step-counter">
+                            Entrada Restante: <strong id="ts-remaining-display">∅</strong>
+                        </div>
+                    </div>
+
+                    <div id="ts-outcome-badge" class="outcome-pill ready">
+                        <span>Pronto</span>
+                    </div>
+
+                    <div id="ts-reason-box" class="halt-reason-box" style="display: none;"></div>
+                </div>
+
+                <!-- 4. Resultados Imediatos: Narração ao Vivo -->
+                <div class="narration-card" id="ts-narration-box">
+                    <div class="narration-header">
+                        <span>📢 O Que a Máquina Fez Neste Passo:</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Passo a Passo Explicado</span>
+                    </div>
+                    <div class="narration-body" id="ts-narration-text">
+                        Clique em "Executar Próximo Passo" para iniciar a leitura da entrada e modificação das pilhas.
+                    </div>
+                </div>
+
+                <!-- 5. Resultados Imediatos: Memória Visual das Pilhas -->
+                <div class="stacks-cockpit-block">
+                    <div class="cockpit-section-title">
+                        <span>Memória Visual das Pilhas</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Acesso estrito aos topos das pilhas</span>
+                    </div>
+
+                    <!-- Fita de fluxo da entrada -->
+                    <div class="input-stream-container">
+                        <div class="input-stream-label">
+                            <span>Fluxo de Leitura da Entrada:</span>
+                            <span id="ts-stream-pointer">Posição: 0</span>
+                        </div>
+                        <div class="input-cells-stream" id="ts-input-stream"></div>
+                    </div>
+
+                    <!-- Tubos verticais das duas pilhas -->
+                    <div class="stacks-visualizer-container">
+                        <!-- Pilha 1 -->
+                        <div class="stack-column stack-1">
+                            <div class="stack-header">
+                                <div class="stack-name">Pilha 1 (P₁)</div>
+                                <div class="stack-top-badge" id="ts-p1-top-info">Topo: $</div>
+                            </div>
+                            <div class="stack-tube" id="ts-stack-1-tube"></div>
+                            <div class="stack-tube-base"></div>
+                        </div>
+
+                        <!-- Pilha 2 -->
+                        <div class="stack-column stack-2">
+                            <div class="stack-header">
+                                <div class="stack-name">Pilha 2 (P₂)</div>
+                                <div class="stack-top-badge" id="ts-p2-top-info">Topo: $</div>
+                            </div>
+                            <div class="stack-tube" id="ts-stack-2-tube"></div>
+                            <div class="stack-tube-base"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Resultados Imediatos: Banner de Veredito - Duas Pilhas -->
+                <div class="verdict-banner" id="ts-verdict-banner">
+                    <div class="verdict-header" id="ts-verdict-title"></div>
+                    <div class="verdict-explanation" id="ts-verdict-desc"></div>
+                    <div class="verdict-metrics-grid">
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Palavra de Entrada:</span>
+                            <span class="metric-val" id="ts-metric-input">""</span>
+                        </div>
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Total de Passos:</span>
+                            <span class="metric-val" id="ts-metric-steps">0</span>
+                        </div>
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Topo Pilha 1:</span>
+                            <span class="metric-val" id="ts-metric-top1">$</span>
+                        </div>
+                        <div class="verdict-metric-item">
+                            <span class="metric-label">Topo Pilha 2:</span>
+                            <span class="metric-val" id="ts-metric-top2">$</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel Inferior: Transição Atual, Regras e Histórico -->
+            <div class="workspace-grid">
+                <!-- Coluna Esquerda: Transição Atual e Regras -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>Transição Atual e Regras</span>
+                    </div>
+
+                    <div class="active-transition-card">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Última Regra Formal Disparada:</span>
+                        <div class="transition-formula" id="ts-active-trans-formula">Nenhuma transição executada ainda.</div>
+                        <div class="transition-desc" id="ts-active-trans-desc">Clique em "Executar Próximo Passo" para iniciar.</div>
+                    </div>
+
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin: 0.5rem 0 0.25rem 0;">Tabela de Transições da Máquina:</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>De</th>
+                                    <th>Lê Entr.</th>
+                                    <th>Topo P₁</th>
+                                    <th>Topo P₂</th>
+                                    <th>Para</th>
+                                    <th>Novo P₁</th>
+                                    <th>Novo P₂</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ts-rules-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita: Histórico das Configurações -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>Histórico das Configurações</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Rastreabilidade passo a passo</span>
+                    </div>
+
+                    <div class="history-container" style="max-height: 400px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Passo</th>
+                                    <th>Estado</th>
+                                    <th>Entrada</th>
+                                    <th>Topo P₁</th>
+                                    <th>Topo P₂</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ts-history-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- ABA 3: RELATÓRIO TEÓRICO COMPLETO (ETAPAS 1 E 2)                -->
+        <!-- ============================================================== -->
+        <section id="tab-theory" class="tab-content">
+            <article class="theory-article">
+                <h1>Atividade - Simuladores de Modelos de Computação</h1>
+                <p><strong>Disciplina:</strong> Teoria da Computação e Complexidade &bull; <strong>Professor:</strong> Adão E. de Souza Filho &bull; <strong>Período:</strong> 2026/2 (Aula 8 e 9)</p>
+
+                <h2>Etapa 1 — Estudo Aprofundado dos Modelos</h2>
+
+                <h3>1. Máquina com Duas Pilhas (2-Stack Machine)</h3>
+                <p>
+                    A Máquina de Duas Pilhas é um autômato equipado com unidade de controle de estados finitos e <strong>duas pilhas independentes</strong> como memória auxiliar de capacidade ilimitada.
+                </p>
+                <ul>
+                    <li><strong>Como a memória é organizada:</strong> Duas pilhas $P_1$ e $P_2$ com disciplina LIFO (Last-In, First-Out). Cada uma possui seu próprio topo acessível e inicializa com um símbolo marcador de fundo (ex: <code>$</code>).</li>
+                    <li><strong>Operações básicas permitidas:</strong> Leitura simultânea do topo de $P_1$ e $P_2$; <code>push</code> (empilhar); <code>pop</code> (desempilhar); leitura do próximo caractere da fita de entrada ou transição espontânea ($\epsilon$); transição de estado.</li>
+                    <li><strong>Como a computação acontece:</strong> Dado o estado $q$, a entrada atual e os topos de ambas as pilhas, a função $\delta(q, a, X_1, X_2) = (p, \gamma_1, \gamma_2)$ determina o novo estado $p$, atualiza os topos substituindo $X_1$ por $\gamma_1$ e $X_2$ por $\gamma_2$, e avança a fita de entrada.</li>
+                    <li><strong>Quando termina:</strong> 
+                        <br>&bull; <em>Aceitação:</em> A entrada foi inteiramente consumida e a máquina atinge um estado final de aceitação ($q \in F$).
+                        <br>&bull; <em>Rejeição:</em> Não existe transição para a configuração atual (parada anormal), ou atinge um estado explícito de rejeição, ou a entrada termina em estado não-final.
+                    </li>
+                </ul>
+
+                <h3>2. Máquina de Turing (Turing Machine)</h3>
+                <p>
+                    A Máquina de Turing é o modelo matemático universal de computação introduzido por Alan Turing em 1936.
+                </p>
+                <ul>
+                    <li><strong>Como a memória é organizada:</strong> Uma fita linear potencialmente infinita em ambas as direções, particionada em células discretas. Cada célula contém um símbolo do alfabeto $\Gamma$. Inicialmente a palavra ocupa células sequenciais e as demais contêm o símbolo em branco (<code>_</code>). Um cabeçote aponta para uma única célula.</li>
+                    <li><strong>Operações básicas permitidas:</strong> Leitura do símbolo sob o cabeçote; escrita (sobrescrita) na célula atual; movimentação do cabeçote para Esquerda ($L$), Direita ($R$) ou Neutro ($S$); transição para um novo estado interno.</li>
+                    <li><strong>Como a computação acontece:</strong> A cada passo, consulta $(q, X)$ sob o cabeçote. A regra $\delta(q, X) = (p, Y, D)$ escreve $Y$, move na direção $D \in \{L, R, S\}$ e atualiza o estado para $p$.</li>
+                    <li><strong>Quando termina:</strong>
+                        <br>&bull; <em>Aceitação:</em> Atinge $q_{accept}$ (ou $q \in F$).
+                        <br>&bull; <em>Rejeição:</em> Atinge $q_{reject}$ ou para por transição indefinida.
+                        <br>&bull; <em>Não-término:</em> Pode entrar em loop infinito (indecidibilidade do problema da parada).
+                    </li>
+                </ul>
+
+                <h2>Etapa 2 — Tabela Comparativa dos Modelos</h2>
+                <div style="overflow-x: auto;">
+                    <table class="theory-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Modelo</th>
+                                <th style="width: 25%;">Como representa a memória?</th>
+                                <th style="width: 20%;">Operações básicas</th>
+                                <th style="width: 20%;">Como executa?</th>
+                                <th style="width: 20%;">Quando termina?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Máquina de Turing</strong></td>
+                                <td>Fita linear infinita dividida em células discretas com alfabeto $\Gamma$ e espaços em branco (<code>_</code>). Cabeçote móvel com leitura e escrita bidirecional.</td>
+                                <td>• Leitura da célula atual<br>• Escrita na célula<br>• Movimento ($L, R, S$)<br>• Transição de estado</td>
+                                <td>Avalia $(q, X)$ sob o cabeçote, grava novo símbolo $Y$, desloca o cabeçote na direção $D \in \{L, R, S\}$ e transita para o novo estado $p$.</td>
+                                <td><strong>Aceita:</strong> Atinge $q_{accept}$.<br><strong>Rejeita:</strong> Atinge $q_{reject}$ ou parada por indefinição.<br><em>Pode não terminar (loop).</em></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Duas Pilhas</strong></td>
+                                <td>Duas estruturas LIFO independentes ($P_1$ e $P_2$) com acesso restrito aos topos e marcadores de base (<code>$</code>). Simulam uma fita bidirecional de acesso irrestrito.</td>
+                                <td>• Leitura dos topos<br>• Push e Pop em $P_1$ e $P_2$<br>• Leitura da entrada atual<br>• Transição de estado</td>
+                                <td>Avalia $(q, a, \text{topo}_1, \text{topo}_2)$, aplica $\delta$, desempilha e empilha os novos símbolos em $P_1$ e $P_2$, avança a fita e transita de estado.</td>
+                                <td><strong>Aceita:</strong> Toda entrada lida e estado atual $\in F$.<br><strong>Rejeita:</strong> Parada por transição inexistente ou estado de rejeição.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>Demonstração da Equivalência de Poder Computacional</h2>
+                <div class="formula-card">
+                    Teorema Fundamental: Autômato com 2 Pilhas ≡ Máquina de Turing Determinística (Turing-Completo)
+                </div>
+                <p>
+                    Embora uma única pilha reconheça apenas linguagens livres de contexto (ex: $a^n b^n$), <strong>duas pilhas são suficientes para simular com precisão absoluta qualquer Máquina de Turing</strong>:
+                </p>
+                <ol>
+                    <li>A <strong>Pilha 1 ($P_1$)</strong> armazena o histórico da fita à <strong>esquerda</strong> do cabeçote (o elemento mais próximo do cabeçote fica no topo de $P_1$).</li>
+                    <li>A <strong>Pilha 2 ($P_2$)</strong> armazena a posição sob o cabeçote e tudo à <strong>direita</strong> (o símbolo sob o cabeçote fica no topo de $P_2$).</li>
+                    <li>Mover para a Direita ($R$): <code>pop</code> de $P_2$ e <code>push</code> desse símbolo em $P_1$.</li>
+                    <li>Mover para a Esquerda ($L$): <code>pop</code> de $P_1$ e <code>push</code> desse símbolo em $P_2$.</li>
+                    <li>Escrever símbolo: <code>pop</code> do topo de $P_2$ e <code>push</code> do novo símbolo em $P_2$.</li>
+                </ol>
+                <p>
+                    Portanto, qualquer algoritmo computável em uma Máquina de Turing pode ser executado em uma Máquina de Duas Pilhas.
+                </p>
+            </article>
+        </section>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer>
+        Desenvolvido como atividade prática para a disciplina de <strong>Teoria da Computação e Complexidade</strong> (Prof. Adão E. de Souza Filho &bull; 2026/2).
+    </footer>
+
+    <!-- Scripts do Simulador -->
+    <script src="js/two_stack_machine.js"></script>
+    <script src="js/turing_machine.js"></script>
+    <script src="js/examples.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
