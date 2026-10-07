@@ -5,7 +5,22 @@
  * Controlador Geral da Aplicação com Foco Pedagógico na Máquina de Turing
  */
 
+// Desativa a restauração automática de rolagem do navegador para sempre iniciar no topo absoluto da página
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+window.scrollTo(0, 0);
+
+// Neutraliza globalmente scrollIntoView para impedir saltos de rolagem da janela
+Element.prototype.scrollIntoView = function() {};
+
+window.addEventListener('load', () => {
+    window.scrollTo(0, 0);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
+    window.scrollTo(0, 0);
+
     // ==========================================
     // CONTROLE DE NAVEGAÇÃO DE ABAS
     // ==========================================
@@ -22,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             const targetEl = document.getElementById(targetTab);
             if (targetEl) targetEl.classList.add('active');
+
+            // Garante início no topo ao alternar de aba
+            window.scrollTo(0, 0);
 
             // Pausa execuções automáticas ao trocar de aba para evitar conflitos
             stopTuringAuto();
@@ -54,6 +72,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const tmDidacticSteps = document.getElementById('tm-didactic-steps');
     const tmNarrationText = document.getElementById('tm-narration-text');
     const tmNarrationGoalText = document.getElementById('tm-narration-goal-text');
+    const tmNarrationStepPill = document.getElementById('tm-narration-step-pill');
+    
+    // Showcase da Linguagem Pré-Configurada (Cockpit)
+    const tmShowcaseCat = document.getElementById('tm-showcase-cat');
+    const tmShowcaseChomsky = document.getElementById('tm-showcase-chomsky');
+    const tmShowcaseFormula = document.getElementById('tm-showcase-formula');
+    const tmShowcaseGoal = document.getElementById('tm-showcase-goal');
+    const tmShowcaseAcceptRule = document.getElementById('tm-showcase-accept-rule');
+    const tmShowcaseRejectRule = document.getElementById('tm-showcase-reject-rule');
+
+    function formatNarrationTextHTML(text) {
+        if (!text) return '';
+        return text
+            .replace(/"([^"]+)"/g, '<code class="nt-quote">"$1"</code>')
+            .replace(/'([^']+)'/g, '<code class="nt-quote">\'$1\'</code>')
+            .replace(/\bDIREITA\b/g, '<span class="nt-dir nt-dir-r">DIREITA ➔</span>')
+            .replace(/\bESQUERDA\b/g, '<span class="nt-dir nt-dir-l">⬅ ESQUERDA</span>')
+            .replace(/\bACEITA!?\b/g, '<span class="nt-status nt-status-acc">ACEITA</span>')
+            .replace(/\bREJEITADA!?\b/g, '<span class="nt-status nt-status-rej">REJEITADA</span>');
+    }
 
     // Banner de Veredito Final Didático
     const tmVerdictBanner = document.getElementById('tm-verdict-banner');
@@ -78,6 +116,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const tmActiveTransDesc = document.getElementById('tm-active-trans-desc');
     const tmRulesTableBody = document.getElementById('tm-rules-table-body');
     const tmHistoryTableBody = document.getElementById('tm-history-table-body');
+
+    // Sticky Execution Dock - Turing
+    const tmStickyDock = document.getElementById('tm-sticky-dock');
+    const tmDockToggleBtn = document.getElementById('tm-dock-toggle-btn');
+    const tmDockToggleIcon = document.getElementById('tm-dock-toggle-icon');
+    const tmDockToggleText = document.getElementById('tm-dock-toggle-text');
+    const tmDockMemoryArea = document.getElementById('tm-dock-memory-area');
+
+    function expandTuringDock() {
+        if (tmDockMemoryArea && tmDockMemoryArea.classList.contains('collapsed')) {
+            tmDockMemoryArea.classList.remove('collapsed');
+            if (tmDockToggleBtn) tmDockToggleBtn.classList.remove('is-collapsed');
+            if (tmDockToggleIcon) tmDockToggleIcon.textContent = '▾';
+            if (tmDockToggleText) tmDockToggleText.textContent = 'Ocultar Fita';
+        }
+    }
 
     // Inicialização dos Presets de Turing
     function initTuringPresets() {
@@ -117,8 +171,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const tmDidacticSymbols = document.getElementById('tm-didactic-symbols');
 
     function renderTuringDidacticGuide() {
-        if (!tmDidacticGoal || !tmDidacticSteps) return;
-        tmDidacticGoal.textContent = tmCurrentPreset.goal || tmCurrentPreset.description;
+        // Atualiza Card de Destaque da Linguagem no Cockpit
+        if (tmShowcaseCat) tmShowcaseCat.textContent = tmCurrentPreset.category || 'Reconhecimento';
+        if (tmShowcaseChomsky) tmShowcaseChomsky.textContent = tmCurrentPreset.chomskyLevel || 'Chomsky';
+        if (tmShowcaseFormula) tmShowcaseFormula.textContent = tmCurrentPreset.formalDefinition || tmCurrentPreset.name;
+        if (tmShowcaseGoal) tmShowcaseGoal.textContent = tmCurrentPreset.goal || tmCurrentPreset.description;
+        if (tmShowcaseAcceptRule) tmShowcaseAcceptRule.textContent = tmCurrentPreset.acceptanceRule || 'Todos os critérios atendidos e fita válida.';
+        if (tmShowcaseRejectRule) tmShowcaseRejectRule.textContent = tmCurrentPreset.rejectionRule || 'Transição indefinida ou regra da linguagem violada.';
+
+        // Atualiza Card Didático Colapsável
+        if (tmDidacticGoal) tmDidacticGoal.textContent = tmCurrentPreset.goal || tmCurrentPreset.description;
 
         // Por que este problema é importante
         if (tmDidacticWhy) {
@@ -131,14 +193,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Estratégia passo a passo
-        tmDidacticSteps.innerHTML = '';
-        if (tmCurrentPreset.strategy && Array.isArray(tmCurrentPreset.strategy)) {
-            tmCurrentPreset.strategy.forEach((stepText) => {
-                const item = document.createElement('div');
-                item.className = 'didactic-step-item';
-                item.innerHTML = `<span>&bull;</span> <span>${stepText}</span>`;
-                tmDidacticSteps.appendChild(item);
-            });
+        if (tmDidacticSteps) {
+            tmDidacticSteps.innerHTML = '';
+            if (tmCurrentPreset.strategy && Array.isArray(tmCurrentPreset.strategy)) {
+                tmCurrentPreset.strategy.forEach((stepText) => {
+                    const item = document.createElement('div');
+                    item.className = 'didactic-step-item';
+                    item.innerHTML = `<span>&bull;</span> <span>${stepText}</span>`;
+                    tmDidacticSteps.appendChild(item);
+                });
+            }
         }
 
         // Guia de símbolos
@@ -163,13 +227,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Oculta banner de veredito no reinício
         if (tmVerdictBanner) tmVerdictBanner.style.display = 'none';
 
+        // Reseta estado do dock fixo
+        if (tmStickyDock) {
+            tmStickyDock.classList.remove('is-running', 'status-accepted', 'status-rejected');
+        }
+
         // Reseta narração
         if (tmNarrationText) {
-            tmNarrationText.textContent = `A fita foi inicializada com a palavra "${inputVal || 'ε'}". Clique em "Executar Próximo Passo" para iniciar a leitura.`;
+            tmNarrationText.innerHTML = `A fita foi inicializada com a palavra <strong>"${inputVal || 'ε'}"</strong>. Clique em <em>"Executar Próximo Passo"</em> para iniciar a computação.`;
         }
         if (tmNarrationGoalText) {
             const initialGoal = tmCurrentPreset.stateDescriptions ? tmCurrentPreset.stateDescriptions[tmMachine.initialState] : 'Pronto para iniciar.';
             tmNarrationGoalText.textContent = initialGoal || 'Pronto para iniciar.';
+        }
+        if (tmNarrationStepPill) {
+            tmNarrationStepPill.className = 'narration-step-pill pill-ready';
+            tmNarrationStepPill.textContent = 'Aguardando Início';
         }
 
         updateTuringUI();
@@ -182,6 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const prevScrollY = window.scrollY;
+        const prevScrollX = window.scrollX;
+
+        expandTuringDock();
         tmMachine.step();
         updateTuringUI();
         renderTuringHistory();
@@ -189,6 +266,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tmMachine.status === 'ACCEPTED' || tmMachine.status === 'REJECTED' || tmMachine.status === 'HALTED') {
             stopTuringAuto();
             showTuringFinalVerdict();
+        }
+
+        // Bloqueia qualquer salto de rolagem acidental provocado por mutações do DOM
+        if (window.scrollY !== prevScrollY || window.scrollX !== prevScrollX) {
+            window.scrollTo(prevScrollX, prevScrollY);
         }
     }
 
@@ -199,6 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tmMachine.status === 'ACCEPTED' || tmMachine.status === 'REJECTED') {
                 resetTuringMachine();
             }
+            expandTuringDock();
+            if (tmStickyDock) tmStickyDock.classList.add('is-running');
             tmBtnAutoText.textContent = 'Pausar Execução';
             tmBtnAuto.classList.replace('btn-success', 'btn-secondary');
             tmAutoInterval = setInterval(() => {
@@ -212,8 +296,80 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(tmAutoInterval);
             tmAutoInterval = null;
         }
+        if (tmStickyDock) tmStickyDock.classList.remove('is-running');
         if (tmBtnAutoText) tmBtnAutoText.textContent = 'Executar Automaticamente';
         if (tmBtnAuto) tmBtnAuto.classList.replace('btn-secondary', 'btn-success');
+    }
+
+    function renderTuringActiveFormula(t) {
+        if (!t) {
+            tmActiveTransFormula.innerHTML = `
+                <div class="tf-empty-state">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Nenhuma transição executada ainda. Aguardando o primeiro passo.</span>
+                </div>
+            `;
+            tmActiveTransDesc.textContent = 'Aguardando o início da computação na fita.';
+            return;
+        }
+
+        const moveCode = String(t.move).toUpperCase();
+        const isRight = moveCode === 'R' || moveCode === 'DIREITA';
+        const isLeft = moveCode === 'L' || moveCode === 'ESQUERDA';
+        const moveShort = isRight ? 'R ➔' : (isLeft ? '⬅ L' : 'S ⏸');
+        const moveLabel = isRight ? 'Direita (R ➔)' : (isLeft ? 'Esquerda (⬅ L)' : 'Neutro (⏸ S)');
+        const moveClass = isRight ? 'tf-move-right' : (isLeft ? 'tf-move-left' : 'tf-move-stay');
+
+        const readDisp = t.oldSymbol === '_' ? `'_' (branco)` : `'${t.oldSymbol}'`;
+        const writeDisp = t.actualWrite === '_' ? `'_' (branco)` : `'${t.actualWrite}'`;
+
+        tmActiveTransFormula.innerHTML = `
+            <div class="tf-container">
+                <div class="tf-math-line">
+                    <span class="tf-func" title="Função de transição formal (δ)">δ</span><span class="tf-punct">(</span>
+                    <span class="tf-token tf-token-state" title="Estado de origem: ${t.fromState}">${t.fromState}</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-read" title="Símbolo lido da fita: '${t.oldSymbol}'">'${t.oldSymbol}'</span>
+                    <span class="tf-punct">)</span>
+                    <span class="tf-arrow" title="Transição para nova configuração">⟶</span>
+                    <span class="tf-punct">(</span>
+                    <span class="tf-token tf-token-state" title="Próximo estado: ${t.toState}">${t.toState}</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-write" title="Símbolo gravado na fita: '${t.actualWrite}'">'${t.actualWrite}'</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-move ${moveClass}" title="Deslocamento do cabeçote: ${moveLabel}">${moveShort}</span>
+                    <span class="tf-punct">)</span>
+                </div>
+
+                <div class="tf-breakdown-grid">
+                    <div class="tf-block tf-block-in">
+                        <span class="tf-block-header">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+                            Condição (Entrada)
+                        </span>
+                        <div class="tf-block-items">
+                            <span class="tf-chip">Estado: <code>${t.fromState}</code></span>
+                            <span class="tf-chip">Lê da Fita: <code>${readDisp}</code></span>
+                        </div>
+                    </div>
+
+                    <div class="tf-breakdown-arrow">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+
+                    <div class="tf-block tf-block-out">
+                        <span class="tf-block-header">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                            Ação Executada (Saída)
+                        </span>
+                        <div class="tf-block-items">
+                            <span class="tf-chip">Vai p/: <code>${t.toState}</code></span>
+                            <span class="tf-chip">Grava: <code>${writeDisp}</code></span>
+                            <span class="tf-chip">Cabeçote: <code>${moveLabel}</code></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        tmActiveTransDesc.textContent = `${t.description || 'Transição em execução.'} [Sobrescreveu com '${t.actualWrite}' e deslocou para ${moveLabel}]`;
     }
 
     function updateTuringUI() {
@@ -234,14 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Narração em Tempo Real e Transição Ativa
         if (config.lastTransition) {
             const t = config.lastTransition;
-            const moveDir = t.move === 'R' ? 'Direita (R)' : (t.move === 'L' ? 'Esquerda (L)' : 'Neutro (S)');
-            tmActiveTransFormula.textContent = `δ( ${t.fromState}, '${t.oldSymbol}' ) → ( ${t.toState}, '${t.actualWrite}', ${t.move} )`;
-            tmActiveTransDesc.textContent = `${t.description || ''} [Escreveu '${t.actualWrite}', moveu para ${moveDir}]`;
+            renderTuringActiveFormula(t);
 
             // Narração em Linguagem Natural
             if (tmNarrationText) {
+                const moveDir = t.move === 'R' ? 'Direita (R)' : (t.move === 'L' ? 'Esquerda (L)' : 'Neutro (S)');
                 const narration = t.human || `Leu '${t.oldSymbol}', gravou '${t.actualWrite}' e deslocou o cabeçote para ${moveDir}, mudando para o estado ${t.toState}.`;
-                tmNarrationText.innerHTML = `<strong>Passo #${config.stepCount}:</strong> ${narration}`;
+                tmNarrationText.innerHTML = formatNarrationTextHTML(narration);
             }
 
             // Próximo Objetivo do Estado Atual
@@ -250,14 +405,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 tmNarrationGoalText.textContent = stateGoal;
             }
 
+            // Badge do Passo Atual
+            if (tmNarrationStepPill) {
+                if (config.isAccepted) {
+                    tmNarrationStepPill.className = 'narration-step-pill pill-accepted';
+                    tmNarrationStepPill.textContent = `✓ Aceita (${config.stepCount} passos)`;
+                } else if (config.isRejected) {
+                    tmNarrationStepPill.className = 'narration-step-pill pill-rejected';
+                    tmNarrationStepPill.textContent = `✗ Rejeitada (${config.stepCount} passos)`;
+                } else {
+                    tmNarrationStepPill.className = 'narration-step-pill pill-running';
+                    tmNarrationStepPill.textContent = `Passo #${config.stepCount}`;
+                }
+            }
+
             highlightActiveRule(tmRulesTableBody, (row) => {
                 return row.getAttribute('data-from') === t.fromState &&
                        (row.getAttribute('data-read') === '*' || row.getAttribute('data-read') === t.oldSymbol);
             });
         } else {
-            tmActiveTransFormula.textContent = 'Nenhuma transição executada ainda.';
-            tmActiveTransDesc.textContent = 'Aguardando o início da computação na fita.';
+            renderTuringActiveFormula(null);
             highlightActiveRule(tmRulesTableBody, () => false);
+        }
+
+        // Atualiza status visual do dock fixo
+        if (tmStickyDock) {
+            if (config.isAccepted) {
+                tmStickyDock.classList.remove('is-running');
+                tmStickyDock.classList.add('status-accepted');
+                tmStickyDock.classList.remove('status-rejected');
+            } else if (config.isRejected) {
+                tmStickyDock.classList.remove('is-running');
+                tmStickyDock.classList.add('status-rejected');
+                tmStickyDock.classList.remove('status-accepted');
+            }
         }
 
         // Se terminou, atualiza veredito
@@ -293,15 +474,12 @@ document.addEventListener('DOMContentLoaded', () => {
             tmTapeTrack.appendChild(cellDiv);
         });
 
-        // Centraliza a visão no cabeçote com scroll suave
+        // Centraliza a visão horizontal no cabeçote sem disparar eventos de rolagem de página
         const activeHeadEl = tmTapeTrack.querySelector('.tape-cell.active-head');
         if (activeHeadEl && tmTapeViewport) {
             const headOffset = activeHeadEl.offsetLeft;
             const viewportHalf = tmTapeViewport.clientWidth / 2;
-            tmTapeViewport.scrollTo({
-                left: headOffset - viewportHalf + (activeHeadEl.clientWidth / 2),
-                behavior: 'smooth'
-            });
+            tmTapeViewport.scrollLeft = headOffset - viewportHalf + (activeHeadEl.clientWidth / 2);
         }
     }
 
@@ -390,9 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tmHistoryTableBody.appendChild(tr);
         });
-
-        const historyContainer = tmHistoryTableBody.closest('.history-container');
-        if (historyContainer) historyContainer.scrollTop = historyContainer.scrollHeight;
     }
 
     // Eventos Turing
@@ -409,6 +584,15 @@ document.addEventListener('DOMContentLoaded', () => {
             tmAutoInterval = setInterval(stepTuringMachine, tmSpeed);
         }
     });
+
+    if (tmDockToggleBtn && tmDockMemoryArea) {
+        tmDockToggleBtn.addEventListener('click', () => {
+            const isCollapsed = tmDockMemoryArea.classList.toggle('collapsed');
+            tmDockToggleBtn.classList.toggle('is-collapsed', isCollapsed);
+            if (tmDockToggleIcon) tmDockToggleIcon.textContent = isCollapsed ? '▸' : '▾';
+            if (tmDockToggleText) tmDockToggleText.textContent = isCollapsed ? 'Mostrar Fita' : 'Ocultar Fita';
+        });
+    }
 
     // ==============================================================
     // 2. CONTROLADOR DA MÁQUINA DE DUAS PILHAS (2-PDA)
@@ -433,6 +617,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const tsDidacticGoal = document.getElementById('ts-didactic-goal');
     const tsDidacticSteps = document.getElementById('ts-didactic-steps');
     const tsNarrationText = document.getElementById('ts-narration-text');
+    const tsNarrationGoalText = document.getElementById('ts-narration-goal-text');
+    const tsNarrationStepPill = document.getElementById('ts-narration-step-pill');
+    
+    // Showcase da Linguagem Pré-Configurada (Cockpit)
+    const tsShowcaseCat = document.getElementById('ts-showcase-cat');
+    const tsShowcaseChomsky = document.getElementById('ts-showcase-chomsky');
+    const tsShowcaseFormula = document.getElementById('ts-showcase-formula');
+    const tsShowcaseGoal = document.getElementById('ts-showcase-goal');
+    const tsShowcaseAcceptRule = document.getElementById('ts-showcase-accept-rule');
+    const tsShowcaseRejectRule = document.getElementById('ts-showcase-reject-rule');
 
     const tsVerdictBanner = document.getElementById('ts-verdict-banner');
     const tsVerdictTitle = document.getElementById('ts-verdict-title');
@@ -459,6 +653,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const tsActiveTransDesc = document.getElementById('ts-active-trans-desc');
     const tsRulesTableBody = document.getElementById('ts-rules-table-body');
     const tsHistoryTableBody = document.getElementById('ts-history-table-body');
+
+    // Sticky Execution Dock - Duas Pilhas
+    const tsStickyDock = document.getElementById('ts-sticky-dock');
+    const tsDockToggleBtn = document.getElementById('ts-dock-toggle-btn');
+    const tsDockToggleIcon = document.getElementById('ts-dock-toggle-icon');
+    const tsDockToggleText = document.getElementById('ts-dock-toggle-text');
+    const tsDockMemoryArea = document.getElementById('ts-dock-memory-area');
+
+    function expandTwoStackDock() {
+        if (tsDockMemoryArea && tsDockMemoryArea.classList.contains('collapsed')) {
+            tsDockMemoryArea.classList.remove('collapsed');
+            if (tsDockToggleBtn) tsDockToggleBtn.classList.remove('is-collapsed');
+            if (tsDockToggleIcon) tsDockToggleIcon.textContent = '▾';
+            if (tsDockToggleText) tsDockToggleText.textContent = 'Ocultar Pilhas';
+        }
+    }
 
     function initTwoStackPresets() {
         tsPresetSelect.innerHTML = '';
@@ -494,8 +704,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const tsDidacticSymbols = document.getElementById('ts-didactic-symbols');
 
     function renderTwoStackDidacticGuide() {
-        if (!tsDidacticGoal || !tsDidacticSteps) return;
-        tsDidacticGoal.textContent = tsCurrentPreset.goal || tsCurrentPreset.description;
+        // Atualiza Card de Destaque da Linguagem no Cockpit
+        if (tsShowcaseCat) tsShowcaseCat.textContent = tsCurrentPreset.category || 'Reconhecimento';
+        if (tsShowcaseChomsky) tsShowcaseChomsky.textContent = tsCurrentPreset.chomskyLevel || 'Chomsky';
+        if (tsShowcaseFormula) tsShowcaseFormula.textContent = tsCurrentPreset.formalDefinition || tsCurrentPreset.name;
+        if (tsShowcaseGoal) tsShowcaseGoal.textContent = tsCurrentPreset.goal || tsCurrentPreset.description;
+        if (tsShowcaseAcceptRule) tsShowcaseAcceptRule.textContent = tsCurrentPreset.acceptanceRule || 'Todos os critérios atendidos e pilhas balanceadas.';
+        if (tsShowcaseRejectRule) tsShowcaseRejectRule.textContent = tsCurrentPreset.rejectionRule || 'Transição indefinida ou regra da linguagem violada.';
+
+        // Atualiza Card Didático Colapsável
+        if (tsDidacticGoal) tsDidacticGoal.textContent = tsCurrentPreset.goal || tsCurrentPreset.description;
 
         // Por que este problema é importante
         if (tsDidacticWhy) {
@@ -508,14 +726,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Estratégia passo a passo
-        tsDidacticSteps.innerHTML = '';
-        if (tsCurrentPreset.strategy && Array.isArray(tsCurrentPreset.strategy)) {
-            tsCurrentPreset.strategy.forEach((stepText) => {
-                const item = document.createElement('div');
-                item.className = 'didactic-step-item';
-                item.innerHTML = `<span>&bull;</span> <span>${stepText}</span>`;
-                tsDidacticSteps.appendChild(item);
-            });
+        if (tsDidacticSteps) {
+            tsDidacticSteps.innerHTML = '';
+            if (tsCurrentPreset.strategy && Array.isArray(tsCurrentPreset.strategy)) {
+                tsCurrentPreset.strategy.forEach((stepText) => {
+                    const item = document.createElement('div');
+                    item.className = 'didactic-step-item';
+                    item.innerHTML = `<span>&bull;</span> <span>${stepText}</span>`;
+                    tsDidacticSteps.appendChild(item);
+                });
+            }
         }
 
         // Guia de símbolos/pilhas
@@ -538,8 +758,21 @@ document.addEventListener('DOMContentLoaded', () => {
         tsMachine.reset(inputVal);
 
         if (tsVerdictBanner) tsVerdictBanner.style.display = 'none';
+
+        // Reseta estado do dock fixo
+        if (tsStickyDock) {
+            tsStickyDock.classList.remove('is-running', 'status-accepted', 'status-rejected');
+        }
+
         if (tsNarrationText) {
-            tsNarrationText.textContent = `A máquina foi carregada com a palavra "${inputVal || 'ε'}". Clique em "Executar Próximo Passo" para iniciar.`;
+            tsNarrationText.innerHTML = `Entrada <strong>"${inputVal || 'ε'}"</strong> carregada nas pilhas. Clique em <em>"Executar Próximo Passo"</em> para iniciar.`;
+        }
+        if (tsNarrationGoalText) {
+            tsNarrationGoalText.textContent = 'Pronto para iniciar o processamento da cadeia e manipulação das pilhas.';
+        }
+        if (tsNarrationStepPill) {
+            tsNarrationStepPill.className = 'narration-step-pill pill-ready';
+            tsNarrationStepPill.textContent = 'Aguardando Início';
         }
 
         updateTwoStackUI();
@@ -552,6 +785,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const prevScrollY = window.scrollY;
+        const prevScrollX = window.scrollX;
+
+        expandTwoStackDock();
         tsMachine.step();
         updateTwoStackUI();
         renderTwoStackHistory();
@@ -559,6 +796,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tsMachine.status === 'ACCEPTED' || tsMachine.status === 'REJECTED' || tsMachine.status === 'HALTED') {
             stopTwoStackAuto();
             showTwoStackFinalVerdict();
+        }
+
+        // Bloqueia qualquer salto de rolagem acidental provocado por mutações do DOM
+        if (window.scrollY !== prevScrollY || window.scrollX !== prevScrollX) {
+            window.scrollTo(prevScrollX, prevScrollY);
         }
     }
 
@@ -569,6 +811,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tsMachine.status === 'ACCEPTED' || tsMachine.status === 'REJECTED') {
                 resetTwoStackMachine();
             }
+            expandTwoStackDock();
+            if (tsStickyDock) tsStickyDock.classList.add('is-running');
             tsBtnAutoText.textContent = 'Pausar Execução';
             tsBtnAuto.classList.replace('btn-success', 'btn-secondary');
             tsAutoInterval = setInterval(() => {
@@ -582,8 +826,77 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(tsAutoInterval);
             tsAutoInterval = null;
         }
+        if (tsStickyDock) tsStickyDock.classList.remove('is-running');
         if (tsBtnAutoText) tsBtnAutoText.textContent = 'Executar Automaticamente';
         if (tsBtnAuto) tsBtnAuto.classList.replace('btn-secondary', 'btn-success');
+    }
+
+    function renderTwoStackActiveFormula(t) {
+        if (!t) {
+            tsActiveTransFormula.innerHTML = `
+                <div class="tf-empty-state">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Nenhuma transição executada ainda. Aguardando o primeiro passo.</span>
+                </div>
+            `;
+            tsActiveTransDesc.textContent = 'Aguardando o início da computação.';
+            return;
+        }
+
+        const inChar = t.consumedChar === 'ε' ? 'ε' : `'${t.consumedChar}'`;
+        const readInputLabel = t.consumedChar === 'ε' ? 'ε (não consome)' : `'${t.consumedChar}'`;
+
+        tsActiveTransFormula.innerHTML = `
+            <div class="tf-container">
+                <div class="tf-math-line">
+                    <span class="tf-func" title="Função de transição formal (δ)">δ</span><span class="tf-punct">(</span>
+                    <span class="tf-token tf-token-state" title="Estado Atual: ${t.fromState}">${t.fromState}</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-read" title="Símbolo Consumido da Entrada: ${inChar}">${inChar}</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-stack1" title="Topo Pilha 1: '${t.top1}'">P₁:'${t.top1}'</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-stack2" title="Topo Pilha 2: '${t.top2}'">P₂:'${t.top2}'</span>
+                    <span class="tf-punct">)</span>
+                    <span class="tf-arrow" title="Transição para nova configuração">⟶</span>
+                    <span class="tf-punct">(</span>
+                    <span class="tf-token tf-token-state" title="Próximo Estado: ${t.toState}">${t.toState}</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-write1" title="Novo Topo Pilha 1: '${t.write1}'">P₁:'${t.write1}'</span><span class="tf-punct">,</span>
+                    <span class="tf-token tf-token-write2" title="Novo Topo Pilha 2: '${t.write2}'">P₂:'${t.write2}'</span>
+                    <span class="tf-punct">)</span>
+                </div>
+
+                <div class="tf-breakdown-grid">
+                    <div class="tf-block tf-block-in">
+                        <span class="tf-block-header">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+                            Condição (Entrada)
+                        </span>
+                        <div class="tf-block-items">
+                            <span class="tf-chip">Estado: <code>${t.fromState}</code></span>
+                            <span class="tf-chip">Entrada: <code>${readInputLabel}</code></span>
+                            <span class="tf-chip">P₁ Topo: <code>'${t.top1}'</code></span>
+                            <span class="tf-chip">P₂ Topo: <code>'${t.top2}'</code></span>
+                        </div>
+                    </div>
+
+                    <div class="tf-breakdown-arrow">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+
+                    <div class="tf-block tf-block-out">
+                        <span class="tf-block-header">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                            Ação Executada (Saída)
+                        </span>
+                        <div class="tf-block-items">
+                            <span class="tf-chip">Vai p/: <code>${t.toState}</code></span>
+                            <span class="tf-chip">P₁ aplica: <code>'${t.write1}'</code></span>
+                            <span class="tf-chip">P₂ aplica: <code>'${t.write2}'</code></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        tsActiveTransDesc.textContent = t.description || 'Transição executada com sucesso.';
     }
 
     function updateTwoStackUI() {
@@ -603,12 +916,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (config.lastTransition) {
             const t = config.lastTransition;
-            const inChar = t.consumedChar === 'ε' ? 'ε' : `'${t.consumedChar}'`;
-            tsActiveTransFormula.textContent = `δ( ${t.fromState}, ${inChar}, '${t.top1}', '${t.top2}' ) → ( ${t.toState}, '${t.write1}', '${t.write2}' )`;
-            tsActiveTransDesc.textContent = t.description || 'Transição executada com sucesso.';
+            renderTwoStackActiveFormula(t);
 
             if (tsNarrationText) {
-                tsNarrationText.innerHTML = `<strong>Passo #${config.stepCount}:</strong> ${t.human || t.description}`;
+                tsNarrationText.innerHTML = formatNarrationTextHTML(t.human || t.description || '');
+            }
+
+            if (tsNarrationGoalText) {
+                if (config.isAccepted) {
+                    tsNarrationGoalText.textContent = 'Palavra aceita com sucesso pela máquina!';
+                } else if (config.isRejected) {
+                    tsNarrationGoalText.textContent = 'Cadeia rejeitada pela máquina.';
+                } else {
+                    tsNarrationGoalText.textContent = `Operando no estado ${config.currentState} (restam ${remaining.length} caracteres na entrada).`;
+                }
+            }
+
+            if (tsNarrationStepPill) {
+                if (config.isAccepted) {
+                    tsNarrationStepPill.className = 'narration-step-pill pill-accepted';
+                    tsNarrationStepPill.textContent = `✓ Aceita (${config.stepCount} passos)`;
+                } else if (config.isRejected) {
+                    tsNarrationStepPill.className = 'narration-step-pill pill-rejected';
+                    tsNarrationStepPill.textContent = `✗ Rejeitada (${config.stepCount} passos)`;
+                } else {
+                    tsNarrationStepPill.className = 'narration-step-pill pill-running';
+                    tsNarrationStepPill.textContent = `Passo #${config.stepCount}`;
+                }
             }
 
             highlightActiveRule(tsRulesTableBody, (row) => {
@@ -618,9 +952,21 @@ document.addEventListener('DOMContentLoaded', () => {
                        (row.getAttribute('data-top2') === '*' || row.getAttribute('data-top2') === t.top2);
             });
         } else {
-            tsActiveTransFormula.textContent = 'Nenhuma transição executada ainda.';
-            tsActiveTransDesc.textContent = 'Aguardando o início da computação.';
+            renderTwoStackActiveFormula(null);
             highlightActiveRule(tsRulesTableBody, () => false);
+        }
+
+        // Atualiza status visual do dock fixo
+        if (tsStickyDock) {
+            if (config.isAccepted) {
+                tsStickyDock.classList.remove('is-running');
+                tsStickyDock.classList.add('status-accepted');
+                tsStickyDock.classList.remove('status-rejected');
+            } else if (config.isRejected) {
+                tsStickyDock.classList.remove('is-running');
+                tsStickyDock.classList.add('status-rejected');
+                tsStickyDock.classList.remove('status-accepted');
+            }
         }
 
         if (config.isAccepted || config.isRejected || config.status === 'HALTED') {
@@ -693,6 +1039,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             tsInputStream.appendChild(cell);
         }
+
+        const currentCell = tsInputStream.querySelector('.stream-cell.current');
+        if (currentCell) {
+            const cellOffset = currentCell.offsetLeft;
+            const viewportHalf = tsInputStream.clientWidth / 2;
+            tsInputStream.scrollLeft = cellOffset - viewportHalf + (currentCell.clientWidth / 2);
+        }
     }
 
     function renderStackTube(tubeElement, stackArray, topInfoElement, stackName) {
@@ -755,9 +1108,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tsHistoryTableBody.appendChild(tr);
         });
-
-        const historyContainer = tsHistoryTableBody.closest('.history-container');
-        if (historyContainer) historyContainer.scrollTop = historyContainer.scrollHeight;
     }
 
     // Eventos 2 Pilhas
@@ -774,6 +1124,15 @@ document.addEventListener('DOMContentLoaded', () => {
             tsAutoInterval = setInterval(stepTwoStackMachine, tsSpeed);
         }
     });
+
+    if (tsDockToggleBtn && tsDockMemoryArea) {
+        tsDockToggleBtn.addEventListener('click', () => {
+            const isCollapsed = tsDockMemoryArea.classList.toggle('collapsed');
+            tsDockToggleBtn.classList.toggle('is-collapsed', isCollapsed);
+            if (tsDockToggleIcon) tsDockToggleIcon.textContent = isCollapsed ? '▸' : '▾';
+            if (tsDockToggleText) tsDockToggleText.textContent = isCollapsed ? 'Mostrar Pilhas' : 'Ocultar Pilhas';
+        });
+    }
 
     // ==========================================
     // FUNÇÕES AUXILIARES COMPARTILHADAS
@@ -799,6 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             validList.forEach(val => {
                 const chip = document.createElement('button');
+                chip.type = 'button';
                 chip.className = 'quick-chip chip-valid';
                 chip.textContent = val === '' ? 'ε (vazio)' : val;
                 chip.title = `Testar cadeia válida: "${val}"`;
@@ -824,6 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             invalidList.forEach(val => {
                 const chip = document.createElement('button');
+                chip.type = 'button';
                 chip.className = 'quick-chip chip-invalid';
                 chip.textContent = val === '' ? 'ε (vazio)' : val;
                 chip.title = `Testar cadeia inválida: "${val}"`;
@@ -869,7 +1230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         rows.forEach(r => {
             if (matcherFunc(r)) {
                 r.classList.add('active-rule');
-                r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
                 r.classList.remove('active-rule');
             }

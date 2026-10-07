@@ -4,7 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Modelos de Computação | Teoria da Computação</title>
-    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
+        // Desativa globalmente scrollIntoView para evitar saltos indesejados de rolagem
+        Element.prototype.scrollIntoView = function() {};
+    </script>
+    <link rel="stylesheet" href="style.css?v=20261007_v6">
 </head>
 <body>
 
@@ -22,15 +34,15 @@
 
         <nav class="nav-tabs">
             <!-- Máquina de Turing como PRIMEIRA aba e ativa por padrão -->
-            <button class="tab-btn active" data-tab="tab-turing">
+            <button type="button" class="tab-btn active" data-tab="tab-turing">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/><path d="M12 3v4M12 17v4"/></svg>
                 Máquina de Turing
             </button>
-            <button class="tab-btn" data-tab="tab-two-stack">
+            <button type="button" class="tab-btn" data-tab="tab-two-stack">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                 Máquina de Duas Pilhas
             </button>
-            <button class="tab-btn" data-tab="tab-theory">
+            <button type="button" class="tab-btn" data-tab="tab-theory">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 Relatório Teórico (Etapas 1 e 2)
             </button>
@@ -65,18 +77,17 @@
             </details>
 
             <!-- ============================================================== -->
-            <!-- COCKPIT UNIFICADO: CONFIGURAÇÃO, CONTROLE & RESULTADOS         -->
+            <!-- 1. CONFIGURAÇÃO DA MÁQUINA DE TURING                           -->
             <!-- ============================================================== -->
             <div class="cockpit-card">
                 <div class="cockpit-header">
                     <div class="cockpit-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/><path d="M12 3v4M12 17v4"/></svg>
-                        <span>Painel de Controle e Resultados — Máquina de Turing</span>
+                        <span>Configuração da Máquina de Turing</span>
                     </div>
-                    <span class="cockpit-subtitle">Configuração, execução passo a passo e fita de memória integradas</span>
+                    <span class="cockpit-subtitle">Seleção de gramática, cadeia de entrada e testes rápidos</span>
                 </div>
 
-                <!-- 1. Configuração e Entrada -->
                 <div class="cockpit-config-panel">
                     <div class="panel-row">
                         <div class="form-group flex-1">
@@ -88,7 +99,41 @@
                             <label for="tm-input-string">Palavra de Entrada na Fita:</label>
                             <div class="input-with-button">
                                 <input type="text" id="tm-input-string" placeholder="Digite a fita inicial (ex: aabbcc)...">
-                                <button id="tm-btn-load" class="btn btn-secondary">Carregar</button>
+                                <button type="button" id="tm-btn-load" class="btn btn-secondary">Carregar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card de Destaque da Linguagem Pré-Configurada (Objetivo, Chomsky e Critérios) -->
+                    <div class="preset-showcase-card" id="tm-preset-showcase">
+                        <div class="preset-showcase-header">
+                            <div class="preset-badge-group">
+                                <span class="badge-cat" id="tm-showcase-cat">Categoria</span>
+                                <span class="badge-chomsky" id="tm-showcase-chomsky">Chomsky Tipo</span>
+                            </div>
+                            <div class="preset-formula-badge" id="tm-showcase-formula">L = ...</div>
+                        </div>
+                        <div class="preset-goal-block">
+                            <div class="preset-goal-title">
+                                <span class="preset-goal-icon">🎯</span>
+                                <span>Objetivo Central da Linguagem:</span>
+                            </div>
+                            <p class="preset-goal-text" id="tm-showcase-goal"></p>
+                        </div>
+                        <div class="preset-rules-grid">
+                            <div class="preset-rule-pill rule-accept">
+                                <span class="rule-icon">✅</span>
+                                <div class="rule-content">
+                                    <span class="rule-label">Critério de Aceitação:</span>
+                                    <span class="rule-desc" id="tm-showcase-accept-rule"></span>
+                                </div>
+                            </div>
+                            <div class="preset-rule-pill rule-reject">
+                                <span class="rule-icon">❌</span>
+                                <div class="rule-content">
+                                    <span class="rule-label">Critério de Rejeição:</span>
+                                    <span class="rule-desc" id="tm-showcase-reject-rule"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -96,18 +141,34 @@
                     <!-- Bateria de testes rápidos categorizados -->
                     <div class="quick-tests-container" id="tm-quick-tests"></div>
                 </div>
+            </div>
 
-                <!-- 2. Barra de Ações (com botão Passo a Passo destacado e sticky) -->
+            <!-- ============================================================== -->
+            <!-- 2. DOCK DE EXECUÇÃO STICKY: FITA E CONTROLES FIXOS NA TELA     -->
+            <!-- ============================================================== -->
+            <div class="sticky-execution-dock" id="tm-sticky-dock">
+                <div class="dock-header-bar">
+                    <div class="dock-pinned-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                        <span>Painel Fixo de Execução &amp; Memória Visual</span>
+                    </div>
+                    <button type="button" class="dock-toggle-btn" id="tm-dock-toggle-btn" title="Minimizar ou expandir a fita gráfica">
+                        <span id="tm-dock-toggle-icon">▾</span>
+                        <span id="tm-dock-toggle-text">Ocultar Fita</span>
+                    </button>
+                </div>
+
+                <!-- Barra de Ações (com botão Passo a Passo destacado) -->
                 <div class="action-bar sticky-action-bar">
-                    <button id="tm-btn-step" class="btn btn-primary btn-step-highlight" title="Executar um passo individual">
+                    <button type="button" id="tm-btn-step" class="btn btn-primary btn-step-highlight" title="Executar um passo individual">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v16l11-8L5 4zm13 0h2v16h-2V4z"/></svg>
                         Executar Próximo Passo
                     </button>
-                    <button id="tm-btn-auto" class="btn btn-success" title="Iniciar execução contínua">
+                    <button type="button" id="tm-btn-auto" class="btn btn-success" title="Iniciar execução contínua">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                         <span id="tm-btn-auto-text">Executar Automaticamente</span>
                     </button>
-                    <button id="tm-btn-reset" class="btn btn-secondary" title="Reiniciar máquina para a fita original">
+                    <button type="button" id="tm-btn-reset" class="btn btn-secondary" title="Reiniciar máquina para a fita original">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         Reiniciar
                     </button>
@@ -119,7 +180,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Resultados Imediatos: Faixa de Status da Máquina -->
+                <!-- Faixa de Status da Máquina -->
                 <div class="status-banner">
                     <div class="status-left">
                         <div class="state-badge-box">
@@ -144,56 +205,96 @@
                     <div id="tm-reason-box" class="halt-reason-box" style="display: none;"></div>
                 </div>
 
-                <!-- 4. Resultados Imediatos: Narração em Tempo Real -->
+                <!-- Memória Visual da Fita de Turing (Fixada na tela com a dock) -->
+                <div class="dock-memory-area" id="tm-dock-memory-area">
+                    <div class="tape-cockpit-block">
+                        <div class="cockpit-section-title">
+                            <span>Fita Bidirecional e Cabeçote de Leitura/Escrita</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Símbolo em branco: '_'</span>
+                        </div>
+
+                        <div class="turing-tape-viewport" id="tm-tape-viewport">
+                            <div class="turing-tape-track" id="tm-tape-track">
+                                <!-- Células geradas via script -->
+                            </div>
+                        </div>
+
+                        <!-- Legenda de Cores da Fita -->
+                        <div class="tape-legend">
+                            <div class="legend-item">
+                                <div class="legend-swatch swatch-head"></div>
+                                <span><strong>Cabeçote (Posição Ativa)</strong></span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-swatch swatch-marked"></div>
+                                <span>Símbolos Marcados / Processados (X, Y, Z)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-swatch swatch-original"></div>
+                                <span>Símbolos da Entrada Original (a, b, c, 0, 1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-swatch swatch-blank"></div>
+                                <span>Célula Vazia / Branco (_)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 3. PAINEL DIDÁTICO: NARRAÇÃO DO PASSO & VEREDITO FINAL         -->
+            <!-- ============================================================== -->
+            <div class="cockpit-card">
+                <div class="cockpit-header">
+                    <div class="cockpit-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Análise Didática e Veredito da Execução</span>
+                    </div>
+                    <span class="cockpit-subtitle">Explicação em tempo real em linguagem natural e diagnóstico formal</span>
+                </div>
+
+                <!-- Narração em Tempo Real -->
                 <div class="narration-card" id="tm-narration-box">
                     <div class="narration-header">
-                        <span>📢 O Que a Máquina Fez Neste Passo:</span>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">Passo a Passo Explicado</span>
-                    </div>
-                    <div class="narration-body" id="tm-narration-text">
-                        Clique em "Executar Próximo Passo" para iniciar a leitura e transformação da fita.
-                    </div>
-                    <div class="narration-next-goal" id="tm-narration-goal-container">
-                        <span>🎯 <strong>Objetivo Atual:</strong></span>
-                        <span id="tm-narration-goal-text">Aguardando início...</span>
-                    </div>
-                </div>
-
-                <!-- 5. Resultados Imediatos: Memória Visual da Fita de Turing -->
-                <div class="tape-cockpit-block">
-                    <div class="cockpit-section-title">
-                        <span>Fita Bidirecional e Cabeçote de Leitura/Escrita</span>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">Símbolo em branco: '_'</span>
-                    </div>
-
-                    <div class="turing-tape-viewport" id="tm-tape-viewport">
-                        <div class="turing-tape-track" id="tm-tape-track">
-                            <!-- Células geradas via script -->
+                        <div class="narration-title-wrap">
+                            <span class="narration-icon-badge">📢</span>
+                            <div>
+                                <div class="narration-title">O Que a Máquina Fez Neste Passo</div>
+                                <div class="narration-subtitle">Passo a passo explicado em linguagem natural</div>
+                            </div>
+                        </div>
+                        <div class="narration-step-pill pill-ready" id="tm-narration-step-pill">
+                            Aguardando Início
                         </div>
                     </div>
 
-                    <!-- Legenda de Cores da Fita -->
-                    <div class="tape-legend">
-                        <div class="legend-item">
-                            <div class="legend-swatch swatch-head"></div>
-                            <span><strong>Cabeçote (Posição Ativa)</strong></span>
+                    <div class="narration-main-content">
+                        <!-- Painel Ação Executada -->
+                        <div class="narration-action-pane">
+                            <div class="narration-pane-tag tag-action">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                <span>Ação Executada:</span>
+                            </div>
+                            <div class="narration-body" id="tm-narration-text">
+                                Clique em "Executar Próximo Passo" para iniciar a leitura e transformação da fita.
+                            </div>
                         </div>
-                        <div class="legend-item">
-                            <div class="legend-swatch swatch-marked"></div>
-                            <span>Símbolos Marcados / Processados (X, Y, Z)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-swatch swatch-original"></div>
-                            <span>Símbolos da Entrada Original (a, b, c, 0, 1)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-swatch swatch-blank"></div>
-                            <span>Célula Vazia / Branco (_)</span>
+
+                        <!-- Painel Objetivo da Unidade de Controle -->
+                        <div class="narration-goal-pane" id="tm-narration-goal-container">
+                            <div class="narration-pane-tag tag-goal">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                                <span>Objetivo Atual da Máquina:</span>
+                            </div>
+                            <div class="narration-goal-content" id="tm-narration-goal-text">
+                                Aguardando início...
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 6. Resultados Imediatos: Banner de Veredito Final Didático -->
+                <!-- Banner de Veredito Final Didático -->
                 <div class="verdict-banner" id="tm-verdict-banner">
                     <div class="verdict-header" id="tm-verdict-title">
                         <!-- Título do Veredito -->
@@ -232,7 +333,12 @@
 
                     <div class="active-transition-card">
                         <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Última Regra Formal Disparada:</span>
-                        <div class="transition-formula" id="tm-active-trans-formula">Nenhuma transição executada ainda.</div>
+                        <div class="transition-formula" id="tm-active-trans-formula">
+                            <div class="tf-empty-state">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span>Nenhuma transição executada ainda. Aguardando o primeiro passo.</span>
+                            </div>
+                        </div>
                         <div class="transition-desc" id="tm-active-trans-desc">Aguardando o início da computação na fita.</div>
                     </div>
 
@@ -303,18 +409,17 @@
             </details>
 
             <!-- ============================================================== -->
-            <!-- COCKPIT UNIFICADO: CONFIGURAÇÃO, CONTROLE & RESULTADOS         -->
+            <!-- 1. CONFIGURAÇÃO DA MÁQUINA DE DUAS PILHAS                      -->
             <!-- ============================================================== -->
             <div class="cockpit-card">
                 <div class="cockpit-header">
                     <div class="cockpit-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                        <span>Painel de Controle e Resultados — Máquina de Duas Pilhas</span>
+                        <span>Configuração da Máquina de Duas Pilhas</span>
                     </div>
-                    <span class="cockpit-subtitle">Configuração, execução passo a passo e tubos de memória das pilhas integrados</span>
+                    <span class="cockpit-subtitle">Seleção de gramática, cadeia de entrada e testes rápidos</span>
                 </div>
 
-                <!-- 1. Configuração e Entrada -->
                 <div class="cockpit-config-panel">
                     <div class="panel-row">
                         <div class="form-group flex-1">
@@ -326,7 +431,41 @@
                             <label for="ts-input-string">Palavra de Entrada:</label>
                             <div class="input-with-button">
                                 <input type="text" id="ts-input-string" placeholder="Digite a cadeia (ex: aabbcc)...">
-                                <button id="ts-btn-load" class="btn btn-secondary">Carregar</button>
+                                <button type="button" id="ts-btn-load" class="btn btn-secondary">Carregar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card de Destaque da Linguagem Pré-Configurada (Objetivo, Chomsky e Critérios) -->
+                    <div class="preset-showcase-card" id="ts-preset-showcase">
+                        <div class="preset-showcase-header">
+                            <div class="preset-badge-group">
+                                <span class="badge-cat" id="ts-showcase-cat">Categoria</span>
+                                <span class="badge-chomsky" id="ts-showcase-chomsky">Chomsky Tipo</span>
+                            </div>
+                            <div class="preset-formula-badge" id="ts-showcase-formula">L = ...</div>
+                        </div>
+                        <div class="preset-goal-block">
+                            <div class="preset-goal-title">
+                                <span class="preset-goal-icon">🎯</span>
+                                <span>Objetivo Central da Linguagem:</span>
+                            </div>
+                            <p class="preset-goal-text" id="ts-showcase-goal"></p>
+                        </div>
+                        <div class="preset-rules-grid">
+                            <div class="preset-rule-pill rule-accept">
+                                <span class="rule-icon">✅</span>
+                                <div class="rule-content">
+                                    <span class="rule-label">Critério de Aceitação:</span>
+                                    <span class="rule-desc" id="ts-showcase-accept-rule"></span>
+                                </div>
+                            </div>
+                            <div class="preset-rule-pill rule-reject">
+                                <span class="rule-icon">❌</span>
+                                <div class="rule-content">
+                                    <span class="rule-label">Critério de Rejeição:</span>
+                                    <span class="rule-desc" id="ts-showcase-reject-rule"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -334,18 +473,34 @@
                     <!-- Bateria de testes rápidos categorizados -->
                     <div class="quick-tests-container" id="ts-quick-tests"></div>
                 </div>
+            </div>
 
-                <!-- 2. Barra de Ações (com botão Passo a Passo destacado e sticky) -->
+            <!-- ============================================================== -->
+            <!-- 2. DOCK DE EXECUÇÃO STICKY: PILHAS E CONTROLES FIXOS NA TELA   -->
+            <!-- ============================================================== -->
+            <div class="sticky-execution-dock" id="ts-sticky-dock">
+                <div class="dock-header-bar">
+                    <div class="dock-pinned-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                        <span>Painel Fixo de Execução &amp; Memória Visual</span>
+                    </div>
+                    <button type="button" class="dock-toggle-btn" id="ts-dock-toggle-btn" title="Minimizar ou expandir os tubos das pilhas">
+                        <span id="ts-dock-toggle-icon">▾</span>
+                        <span id="ts-dock-toggle-text">Ocultar Pilhas</span>
+                    </button>
+                </div>
+
+                <!-- Barra de Ações (com botão Passo a Passo destacado) -->
                 <div class="action-bar sticky-action-bar">
-                    <button id="ts-btn-step" class="btn btn-primary btn-step-highlight" title="Executar um passo individual">
+                    <button type="button" id="ts-btn-step" class="btn btn-primary btn-step-highlight" title="Executar um passo individual">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v16l11-8L5 4zm13 0h2v16h-2V4z"/></svg>
                         Executar Próximo Passo
                     </button>
-                    <button id="ts-btn-auto" class="btn btn-success" title="Iniciar execução contínua">
+                    <button type="button" id="ts-btn-auto" class="btn btn-success" title="Iniciar execução contínua">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                         <span id="ts-btn-auto-text">Executar Automaticamente</span>
                     </button>
-                    <button id="ts-btn-reset" class="btn btn-secondary" title="Reiniciar máquina para a entrada original">
+                    <button type="button" id="ts-btn-reset" class="btn btn-secondary" title="Reiniciar máquina para a entrada original">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         Reiniciar
                     </button>
@@ -357,7 +512,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Resultados Imediatos: Status da Máquina de 2 Pilhas -->
+                <!-- Status da Máquina de 2 Pilhas -->
                 <div class="status-banner">
                     <div class="status-left">
                         <div class="state-badge-box">
@@ -379,58 +534,102 @@
                     <div id="ts-reason-box" class="halt-reason-box" style="display: none;"></div>
                 </div>
 
-                <!-- 4. Resultados Imediatos: Narração ao Vivo -->
+                <!-- Memória Visual das Pilhas (Fixada na tela com a dock) -->
+                <div class="dock-memory-area" id="ts-dock-memory-area">
+                    <div class="stacks-cockpit-block">
+                        <div class="cockpit-section-title">
+                            <span>Memória Visual das Pilhas &amp; Fita de Entrada</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Acesso estrito aos topos das pilhas (LIFO)</span>
+                        </div>
+
+                        <!-- Fita de fluxo da entrada -->
+                        <div class="input-stream-container">
+                            <div class="input-stream-label">
+                                <span>Fluxo de Leitura da Entrada:</span>
+                                <span id="ts-stream-pointer">Posição: 0</span>
+                            </div>
+                            <div class="input-cells-stream" id="ts-input-stream"></div>
+                        </div>
+
+                        <!-- Tubos verticais das duas pilhas -->
+                        <div class="stacks-visualizer-container">
+                            <!-- Pilha 1 -->
+                            <div class="stack-column stack-1">
+                                <div class="stack-header">
+                                    <div class="stack-name">Pilha 1 (P₁)</div>
+                                    <div class="stack-top-badge" id="ts-p1-top-info">Topo: $</div>
+                                </div>
+                                <div class="stack-tube" id="ts-stack-1-tube"></div>
+                                <div class="stack-tube-base"></div>
+                            </div>
+
+                            <!-- Pilha 2 -->
+                            <div class="stack-column stack-2">
+                                <div class="stack-header">
+                                    <div class="stack-name">Pilha 2 (P₂)</div>
+                                    <div class="stack-top-badge" id="ts-p2-top-info">Topo: $</div>
+                                </div>
+                                <div class="stack-tube" id="ts-stack-2-tube"></div>
+                                <div class="stack-tube-base"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 3. PAINEL DIDÁTICO: NARRAÇÃO DO PASSO & VEREDITO FINAL         -->
+            <!-- ============================================================== -->
+            <div class="cockpit-card">
+                <div class="cockpit-header">
+                    <div class="cockpit-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Análise Didática e Veredito da Execução</span>
+                    </div>
+                    <span class="cockpit-subtitle">Explicação em tempo real em linguagem natural e diagnóstico formal</span>
+                </div>
+
+                <!-- Narração ao Vivo -->
                 <div class="narration-card" id="ts-narration-box">
                     <div class="narration-header">
-                        <span>📢 O Que a Máquina Fez Neste Passo:</span>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">Passo a Passo Explicado</span>
-                    </div>
-                    <div class="narration-body" id="ts-narration-text">
-                        Clique em "Executar Próximo Passo" para iniciar a leitura da entrada e modificação das pilhas.
-                    </div>
-                </div>
-
-                <!-- 5. Resultados Imediatos: Memória Visual das Pilhas -->
-                <div class="stacks-cockpit-block">
-                    <div class="cockpit-section-title">
-                        <span>Memória Visual das Pilhas</span>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">Acesso estrito aos topos das pilhas</span>
-                    </div>
-
-                    <!-- Fita de fluxo da entrada -->
-                    <div class="input-stream-container">
-                        <div class="input-stream-label">
-                            <span>Fluxo de Leitura da Entrada:</span>
-                            <span id="ts-stream-pointer">Posição: 0</span>
-                        </div>
-                        <div class="input-cells-stream" id="ts-input-stream"></div>
-                    </div>
-
-                    <!-- Tubos verticais das duas pilhas -->
-                    <div class="stacks-visualizer-container">
-                        <!-- Pilha 1 -->
-                        <div class="stack-column stack-1">
-                            <div class="stack-header">
-                                <div class="stack-name">Pilha 1 (P₁)</div>
-                                <div class="stack-top-badge" id="ts-p1-top-info">Topo: $</div>
+                        <div class="narration-title-wrap">
+                            <span class="narration-icon-badge">📢</span>
+                            <div>
+                                <div class="narration-title">O Que a Máquina Fez Neste Passo</div>
+                                <div class="narration-subtitle">Passo a passo explicado em linguagem natural</div>
                             </div>
-                            <div class="stack-tube" id="ts-stack-1-tube"></div>
-                            <div class="stack-tube-base"></div>
+                        </div>
+                        <div class="narration-step-pill pill-ready" id="ts-narration-step-pill">
+                            Aguardando Início
+                        </div>
+                    </div>
+
+                    <div class="narration-main-content">
+                        <!-- Painel Ação Executada -->
+                        <div class="narration-action-pane">
+                            <div class="narration-pane-tag tag-action">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                <span>Ação Executada:</span>
+                            </div>
+                            <div class="narration-body" id="ts-narration-text">
+                                Clique em "Executar Próximo Passo" para iniciar a leitura da entrada e modificação das pilhas.
+                            </div>
                         </div>
 
-                        <!-- Pilha 2 -->
-                        <div class="stack-column stack-2">
-                            <div class="stack-header">
-                                <div class="stack-name">Pilha 2 (P₂)</div>
-                                <div class="stack-top-badge" id="ts-p2-top-info">Topo: $</div>
+                        <!-- Painel Objetivo da Unidade de Controle -->
+                        <div class="narration-goal-pane" id="ts-narration-goal-container">
+                            <div class="narration-pane-tag tag-goal">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                                <span>Objetivo Atual da Máquina:</span>
                             </div>
-                            <div class="stack-tube" id="ts-stack-2-tube"></div>
-                            <div class="stack-tube-base"></div>
+                            <div class="narration-goal-content" id="ts-narration-goal-text">
+                                Aguardando início...
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 6. Resultados Imediatos: Banner de Veredito - Duas Pilhas -->
+                <!-- Banner de Veredito - Duas Pilhas -->
                 <div class="verdict-banner" id="ts-verdict-banner">
                     <div class="verdict-header" id="ts-verdict-title"></div>
                     <div class="verdict-explanation" id="ts-verdict-desc"></div>
@@ -465,7 +664,12 @@
 
                     <div class="active-transition-card">
                         <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Última Regra Formal Disparada:</span>
-                        <div class="transition-formula" id="ts-active-trans-formula">Nenhuma transição executada ainda.</div>
+                        <div class="transition-formula" id="ts-active-trans-formula">
+                            <div class="tf-empty-state">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span>Nenhuma transição executada ainda. Aguardando o primeiro passo.</span>
+                            </div>
+                        </div>
                         <div class="transition-desc" id="ts-active-trans-desc">Clique em "Executar Próximo Passo" para iniciar.</div>
                     </div>
 
@@ -611,10 +815,10 @@
         Desenvolvido como atividade prática para a disciplina de <strong>Teoria da Computação e Complexidade</strong> (Prof. Adão E. de Souza Filho &bull; 2026/2).
     </footer>
 
-    <!-- Scripts do Simulador -->
-    <script src="js/two_stack_machine.js"></script>
-    <script src="js/turing_machine.js"></script>
-    <script src="js/examples.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Scripts do Simulador com Cache Buster -->
+    <script src="js/two_stack_machine.js?v=20261007_v6"></script>
+    <script src="js/turing_machine.js?v=20261007_v6"></script>
+    <script src="js/examples.js?v=20261007_v6"></script>
+    <script src="js/app.js?v=20261007_v6"></script>
 </body>
 </html>
